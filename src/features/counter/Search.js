@@ -1,59 +1,53 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  decrement,
-  increment,
-  incrementByAmount,
-  incrementAsync,
-  selectCount,
-} from './counterSlice';
+  onInputChange,
+  onSelect,
+  selectResults,
+  selectValue,
+  selectQuery,
+} from './searchSlice';
 import styles from './Search.module.css';
 
+const renderItem = (dispatch, item, query) => {
+  const { title } = item;
+  const s = title.toLowerCase().indexOf(query);
+
+  const node = <span>
+    { title.substr(0, s) }
+    <strong>{title.substr(s,query.length)}</strong>
+    { title.substr(s + query.length) }
+  </span>;
+
+  return (<div
+    className={styles.item}
+    key={item.id}
+    onClick={ (e) => dispatch(onSelect(title)) }
+  >
+    {node}
+  </div>);
+}
+
 export function Search() {
-  const count = useSelector(selectCount);
+  const results = useSelector(selectResults);
+  const query = useSelector(selectQuery);
+  const value = useSelector(selectValue);
   const dispatch = useDispatch();
-  const [incrementAmount, setIncrementAmount] = useState('2');
 
   return (
     <div>
-      <div className={styles.row}>
-        <button
-          className={styles.button}
-          aria-label="Increment value"
-          onClick={() => dispatch(increment())}
-        >
-          +
-        </button>
-        <span className={styles.value}>{count}</span>
-        <button
-          className={styles.button}
-          aria-label="Decrement value"
-          onClick={() => dispatch(decrement())}
-        >
-          -
-        </button>
-      </div>
-      <div className={styles.row}>
+      <div className={styles.wrapper}>
+
         <input
-          className={styles.textbox}
-          aria-label="Set increment amount"
-          value={incrementAmount}
-          onChange={e => setIncrementAmount(e.target.value)}
+          className={styles.input}
+          placeholder='Type "mint" for example'
+          onChange={(e) => dispatch(onInputChange(e.target.value))}
+          value={value}
         />
-        <button
-          className={styles.button}
-          onClick={() =>
-            dispatch(incrementByAmount(Number(incrementAmount) || 0))
-          }
-        >
-          Add Amount
-        </button>
-        <button
-          className={styles.asyncButton}
-          onClick={() => dispatch(incrementAsync(Number(incrementAmount) || 0))}
-        >
-          Add Async
-        </button>
+
+        <div className={styles.results}>
+          { results.map(p => renderItem(dispatch, p, query) ) }
+        </div>
       </div>
     </div>
   );
